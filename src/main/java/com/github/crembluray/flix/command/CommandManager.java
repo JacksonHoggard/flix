@@ -1,17 +1,16 @@
 package com.github.crembluray.flix.command;
 
-import com.github.crembluray.flix.Flix;
 import discord4j.core.object.entity.Message;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CommandManager {
-    public final Flix bot;
     public Map<String, Command> registered;
     public Map<String, Command> aliases;
 
-    public CommandManager(Flix bot) {
-        this.bot = bot;
+    public CommandManager() {
         registered = new HashMap<>();
         aliases = new HashMap<>();
     }

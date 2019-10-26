@@ -16,28 +16,34 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class Flix {
-    private static Flix instance;
+public final class Flix {
     private static final Logger log = LoggerFactory.getLogger("Flix");
-    private final DiscordClient client;
-    private final CommandManager commandManager;
+    private static final CommandManager commandManager;
+    private static final DiscordClient client;
+
+    static {
+        client = new DiscordClientBuilder(readConfig()).build();
+        commandManager = new CommandManager();
+    }
 
     private Flix() {
-        instance = this;
+    }
 
-        client = new DiscordClientBuilder(readConfig()).build();
-        client.getEventDispatcher().on(MessageCreateEvent.class).subscribe(this::onMessage);
+    private static void init() {
+        // Register message listener
+        client.getEventDispatcher().on(MessageCreateEvent.class).subscribe(Flix::onMessage);
 
-        commandManager = new CommandManager(this);
+        // Register command instances
         commandManager.registerCommand(new Ping());
         commandManager.registerCommand(new Wiki());
         commandManager.registerCommand(new Screenshare());
         commandManager.registerCommand(new Help(commandManager));
 
+        // Login
         client.login().block();
     }
 
-    private String readConfig() {
+    private static String readConfig() {
         try {
             File tokenFile = new File("token.txt");
             return new BufferedReader(new FileReader(tokenFile)).readLine();
@@ -48,7 +54,7 @@ public class Flix {
         }
     }
 
-    private void onMessage(MessageCreateEvent event) {
+    private static void onMessage(MessageCreateEvent event) {
         event.getMessage().getContent().ifPresent(content -> {
             if (content.startsWith("f!"))
                 commandManager.process(event.getMessage());
@@ -56,10 +62,6 @@ public class Flix {
     }
 
     public static void main(String[] args) {
-        new Flix();
-    }
-
-    public static Flix getInstance() {
-        return instance;
+        Flix.init();
     }
 }
