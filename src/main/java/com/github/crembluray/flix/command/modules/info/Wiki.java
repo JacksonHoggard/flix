@@ -2,12 +2,12 @@ package com.github.crembluray.flix.command.modules.info;
 
 import com.github.crembluray.flix.command.Command;
 import com.github.crembluray.flix.util.DiscordUtils;
-import com.sun.org.apache.regexp.internal.RE;
 import discord4j.core.object.entity.Message;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 
@@ -20,38 +20,40 @@ public class Wiki extends Command {
     }
 
     @Override
-    public void onCommand(Message message, String[] args) throws Exception {
-        if(!message.getContent().get().contains(" ")) {
+    public void onCommand(Message message, String[] args) {
+        if (!message.getContent().orElse("").contains(" ")) {
             DiscordUtils.sendMessage(message, REPLY_NOT_FOUND);
             return;
         }
-        DiscordUtils.sendMessage(message, searchWiki(message.getContent().orElse("f!wiki").substring(7)));
+
+        try {
+            DiscordUtils.sendMessage(message, searchWiki(message.getContent().orElse("f!wiki").substring(7)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private String searchWiki(String subject) throws Exception {
+    private String searchWiki(String subject) throws IOException {
         URL url = new URL("https://en.wikipedia.org/w/api.php?action=query&prop=extracts&format=json&exsentences=1&exintro=&explaintext=&exsectionformat=plain&titles=" + subject.replace(" ", "_"));
 
         // parse text
-        String text = "";
+        StringBuilder text = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()))) {
-            String line = null;
-            while (null != (line = br.readLine())) {
-                line = line.trim();
-                if (true) {
-                    text += line;
-                }
+            String line;
+            while ((line = br.readLine()) != null) {
+                text.append(line.trim());
             }
         }
 
-        JSONObject json = new JSONObject(text);
+        JSONObject json = new JSONObject(text.toString());
         JSONObject query = json.getJSONObject("query");
         JSONObject pages = query.getJSONObject("pages");
         String extract = "";
-        for(String key: pages.keySet()) {
+        for (String key : pages.keySet()) {
             JSONObject page = pages.getJSONObject(key);
-            try{
+            try {
                 extract = page.getString("extract");
-            } catch(JSONException e) {
+            } catch (JSONException e) {
                 return REPLY_NOT_FOUND;
             }
         }

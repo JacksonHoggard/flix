@@ -3,8 +3,11 @@ package com.github.crembluray.flix.command.modules.utility;
 import com.github.crembluray.flix.command.Command;
 import com.github.crembluray.flix.util.DiscordUtils;
 import discord4j.core.object.VoiceState;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.util.Snowflake;
+import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
@@ -17,13 +20,23 @@ public class Screenshare extends Command {
     }
 
     @Override
-    public void onCommand(Message message, String[] args) throws Exception {
-        Optional<Snowflake> channelIdOptional = message.getAuthorAsMember().block().getVoiceState().map(VoiceState::getChannelId).block();
-        if (Optional.empty().equals(channelIdOptional)) {
-            DiscordUtils.reply(message, REPLY_NO_VOICE_CHANNEL);
-            return;
-        }
-
-        DiscordUtils.reply(message, "https://discordapp.com/channels/" + message.getGuild().block().getId().asLong() + "/" + channelIdOptional.get().asString());
+    public void onCommand(Message message, String[] args) {
+        message.getAuthorAsMember()
+                // Get ID of user's voice channel
+                .flatMap(Member::getVoiceState)
+                .map(VoiceState::getChannelId)
+                // Exit if user is not in a channel
+                .filter(Optional::isPresent)
+                .switchIfEmpty(Mono.fromRunnable(() -> DiscordUtils.reply(message, REPLY_NO_VOICE_CHANNEL)))
+                // Build and send screenshare link
+                .map(Optional::get)
+                .map(Snowflake::asString)
+                .subscribe(channelId -> {
+                    String guildId = message.getGuild()
+                            .map(Guild::getId)
+                            .map(Snowflake::asString)
+                            .block();
+                    DiscordUtils.reply(message, "https://discordapp.com/channels/" + guildId + "/" + channelId);
+                });
     }
 }

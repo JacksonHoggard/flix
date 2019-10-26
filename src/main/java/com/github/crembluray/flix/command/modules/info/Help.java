@@ -6,8 +6,6 @@ import com.github.crembluray.flix.util.DiscordUtils;
 import discord4j.core.object.entity.Message;
 import reactor.core.publisher.Flux;
 
-import java.util.stream.Collectors;
-
 public class Help extends Command {
 
     private final CommandManager commands;
@@ -18,7 +16,7 @@ public class Help extends Command {
     }
 
     @Override
-    public void onCommand(Message message, String[] args) throws Exception {
+    public void onCommand(Message message, String[] args) {
         if (args.length != 0) {
             Command command = commands.getCommand(args[0]);
             if (command == null) {
@@ -26,30 +24,21 @@ public class Help extends Command {
                 return;
             }
             String msg;
-            if (command.help != null)
-                msg = "`" + command.help + "`";
+            if (command.getHelp() != null)
+                msg = "`" + command.getHelp() + "`";
             else
-                msg = "`No help available for the " + command.command + " command`";
+                msg = "`No help available for the " + command.getName() + " command`";
             DiscordUtils.sendMessage(message, msg);
             return;
         }
 
-        Flux.mergeSequential(
-                commands.registered.values()
-                        .stream()
-                        .map(cmd -> cmd.canUse(message))
-                        .collect(Collectors.toList()))
-                .zipWithIterable(commands.registered.values())
-                .reduce("", (str, tuple) -> {
-                    if (tuple.getT1())
-                        return str + ", " + tuple.getT2().command;
-                    return str;
-                })
-                .subscribe(text -> {
-                    text = text.substring(2);
-                    text = "\nCommands available to you:\n ```" + text + "```";
-                    text += "\nType `!help <command>` to see a description of the command";
-                    DiscordUtils.reply(message, text);
+        Flux.fromIterable(commands.commandMap.values())
+                .map(Command::getName)
+                .reduce((prev, current) -> prev + ", " + current)
+                .subscribe(commands -> {
+                    commands = "\nCommands available to you:\n ```" + commands + "```";
+                    commands += "\nType `!help <command>` to see a description of the command";
+                    DiscordUtils.reply(message, commands);
                 });
     }
 }

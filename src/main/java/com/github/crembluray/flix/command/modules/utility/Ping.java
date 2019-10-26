@@ -11,7 +11,7 @@ public class Ping extends Command {
     }
 
     @Override
-    public void onCommand(Message message, String[] args) throws Exception {
+    public void onCommand(Message message, String[] args) {
         DiscordUtils.sendMessage(message, "Pong!");
     }
 }
