@@ -2,7 +2,6 @@ package com.github.crembluray.flix.command.modules.info;
 
 import com.github.crembluray.flix.command.Command;
 import com.github.crembluray.flix.util.DiscordUtils;
-import com.sun.org.apache.regexp.internal.RE;
 import discord4j.core.object.entity.Message;
 import org.json.JSONException;
 import org.json.JSONObject;
