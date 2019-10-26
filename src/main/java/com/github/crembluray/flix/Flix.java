@@ -2,8 +2,8 @@ package com.github.crembluray.flix;
 
 import com.github.crembluray.flix.command.CommandManager;
 import com.github.crembluray.flix.command.modules.info.Help;
-import com.github.crembluray.flix.command.modules.utility.Ping;
 import com.github.crembluray.flix.command.modules.info.Wiki;
+import com.github.crembluray.flix.command.modules.utility.Ping;
 import com.github.crembluray.flix.command.modules.utility.Screenshare;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
@@ -11,18 +11,18 @@ import discord4j.core.event.domain.message.MessageCreateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 public class Flix {
-
     private static Flix instance;
-    public static final Logger log = LoggerFactory.getLogger("Flix");
-
-    public final DiscordClient client;
-
+    private static final Logger log = LoggerFactory.getLogger("Flix");
+    private final DiscordClient client;
     private final CommandManager commandManager;
 
-    private Flix()  {
+    private Flix() {
         instance = this;
 
         client = new DiscordClientBuilder(readConfig()).build();
@@ -38,18 +38,17 @@ public class Flix {
     }
 
     private String readConfig() {
-        BufferedReader objReader = null;
-        String token = null;
         try {
-            objReader = new BufferedReader(new FileReader("token.txt"));
-            token = objReader.readLine();
-        } catch(IOException e) {
-            e.printStackTrace();
+            File tokenFile = new File("token.txt");
+            return new BufferedReader(new FileReader(tokenFile)).readLine();
+        } catch (IOException e) {
+            log.error("token.txt does not exist or cannot be read. Please create it.");
+            System.exit(1);
+            return null;
         }
-        return token;
     }
 
-    public void onMessage(MessageCreateEvent event) {
+    private void onMessage(MessageCreateEvent event) {
         event.getMessage().getContent().ifPresent(content -> {
             if (content.startsWith("f!"))
                 commandManager.process(event.getMessage());
@@ -63,5 +62,4 @@ public class Flix {
     public static Flix getInstance() {
         return instance;
     }
-
 }
