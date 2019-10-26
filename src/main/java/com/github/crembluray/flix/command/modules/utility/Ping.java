@@ -1,4 +1,4 @@
-package com.github.crembluray.flix.module;
+package com.github.crembluray.flix.command.modules.utility;
 
 import com.github.crembluray.flix.command.Command;
 import com.github.crembluray.flix.util.DiscordUtils;

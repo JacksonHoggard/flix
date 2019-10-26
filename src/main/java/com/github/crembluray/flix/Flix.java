@@ -1,7 +1,10 @@
 package com.github.crembluray.flix;
 
 import com.github.crembluray.flix.command.CommandManager;
-import com.github.crembluray.flix.module.Ping;
+import com.github.crembluray.flix.command.modules.info.Help;
+import com.github.crembluray.flix.command.modules.utility.Ping;
+import com.github.crembluray.flix.command.modules.info.Wiki;
+import com.github.crembluray.flix.command.modules.utility.Screenshare;
 import discord4j.core.DiscordClient;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -27,6 +30,9 @@ public class Flix {
 
         commandManager = new CommandManager(this);
         commandManager.registerCommand(new Ping());
+        commandManager.registerCommand(new Wiki());
+        commandManager.registerCommand(new Screenshare());
+        commandManager.registerCommand(new Help(commandManager));
 
         client.login().block();
     }
