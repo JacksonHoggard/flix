@@ -1,8 +1,6 @@
 # Flix
 🎥 Discord bot for the Movie Knight discord server
 
-![flix](https://crembluray.github.io/images/flix_banner.png)
-
 Flix is a modular, multi-feature Discord bot. It was created for use with the Movie Knight discord server and features an abundance of management tools.
 
 ## Setup
